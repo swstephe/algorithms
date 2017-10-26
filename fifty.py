@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+"""
+from https://fiftyexamples.readthedocs.io/en/latest
+"""
+
+
+def celsius(f):
+    return (float(f) - 32) * 5/9.
+
+
+def fahrenheit(c):
+    return (float(c) * 9/5.) + 32
 
 
 def find_max(_list):
@@ -11,5 +23,8 @@ def find_max2(_list):
     return _list[0] if _list[0] > v else v
 
 
-assert find_max([1, 2, 3, 4, 3, 2, 1, 7, 8, 6, 2]) == 8
-assert find_max2([1, 2, 3, 4, 3, 2, 1, 7, 8, 6, 2]) == 8
+def pop_count(value):
+    value -= (value >> 1) & 0x55555555
+    value = (value & 0x33333333) + ((value >> 2) & 0x33333333)
+    return ((((value & 0xF0F0F0F) + (value >> 4 & 0xF0F0F0F))*0x1010101) & 0xFF000000) >> 24
+
