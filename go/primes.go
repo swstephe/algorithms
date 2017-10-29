@@ -25,7 +25,7 @@ func IsPrime0(n uint64) bool {
 		return false
 	}
 	limit := uint64(math.Sqrt(float64(n)))
-	for i := uint64(5); i <= limit; i++ {
+	for i := uint64(2); i <= limit; i++ {
 		if n % i == 0 {
 			return false
 		}
@@ -115,8 +115,8 @@ func Miller(n uint64) bool {
 	d := n >> 1
 	s := uint64(1)
     for (d & 1) == 0 {
-    	d >>= 1
-    	s++
+        d >>= 1
+        s++
 	}
     for _, seed := range MillerSeeds {
 		if n < seed.limit {
