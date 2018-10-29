@@ -1,6 +1,5 @@
 # -*- coding: utf8 -*-
 import random
-from nose.tools import *
 from api.crypto.enc import hex
 from binascii import unhexlify, hexlify
 
@@ -13,17 +12,17 @@ def test_power_of_2():
     for p in range(15):
         _orig = random_bytes(2**p)
         _enc = hex.encode(_orig)
-        eq_(hexlify(_orig).decode('ascii'), _enc)
+        assert hexlify(_orig).decode('ascii') ==  _enc
         _dec = hex.decode(_enc)
-        eq_(unhexlify(_enc), _dec)
-        eq_(_orig, _dec)
+        assert unhexlify(_enc) == _dec
+        assert _orig == _dec
 
 
 def test_power_of_2_plus_1():
     for p in range(15):
         _orig = random_bytes(2**p + 1)
         _enc = hex.encode(_orig)
-        eq_(hexlify(_orig).decode('ascii'), _enc)
+        assert hexlify(_orig).decode('ascii') == _enc
         _dec = hex.decode(_enc)
-        eq_(unhexlify(_enc), _dec)
-        eq_(_orig, _dec)
+        assert unhexlify(_enc) == _dec
+        assert _orig == _dec

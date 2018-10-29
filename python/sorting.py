@@ -1,3 +1,6 @@
+# -*- coding: utf8 -*-
+
+
 def selection(data):
     if len(data) < 2:
         return data

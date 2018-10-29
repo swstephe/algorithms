@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from nose.tools import *
 import trees
 import random
 
@@ -17,20 +16,20 @@ def test_binary():
             tree.insert(value)
             # print '+', value, tree.in_order()
             data.add(value)
-            eq_(tree.in_order(), sorted(list(data)))
-        print '-'*20
-        print 'tree', tree
-        print 'in_order', tree.in_order()
-        print 'height', tree.height
-        print 'count', tree.count
-        print 'paths', tree.paths()
-        print 'leaves', tree.leaves()
+            assert tree.in_order() == sorted(list(data))
+        print('-'*20)
+        print('tree', tree)
+        print('in_order', tree.in_order())
+        print('height', tree.height)
+        print('count', tree.count)
+        print('paths', tree.paths())
+        print('leaves', tree.leaves())
         for value in list(data):
             tree.delete(value)
             # print '-', value, tree.in_order()
             data.remove(value)
-            eq_(tree.in_order(), sorted(list(data)))
-        eq_(tree.in_order(), [])
+            assert tree.in_order() == sorted(list(data))
+        assert tree.in_order() == []
 
 
 def test_binary1():
@@ -42,10 +41,10 @@ def test_binary1():
     tree.insert(70)
     tree.insert(60)
     tree.insert(80)
-    eq_(tree.in_order(), [20, 30, 40, 50, 60, 70, 80])
+    assert tree.in_order() == [20, 30, 40, 50, 60, 70, 80]
     tree.delete(20)
-    eq_(tree.in_order(), [30, 40, 50, 60, 70, 80])
+    assert tree.in_order() == [30, 40, 50, 60, 70, 80]
     tree.delete(30)
-    eq_(tree.in_order(), [40, 50, 60, 70, 80])
+    assert tree.in_order() == [40, 50, 60, 70, 80]
     tree.delete(50)
-    eq_(tree.in_order(), [40, 60, 70, 80])
+    assert tree.in_order() == [40, 60, 70, 80]

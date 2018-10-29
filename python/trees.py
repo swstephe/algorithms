@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from itertools import izip_longest
+from itertools import zip_longest
 
 
 class BinaryNode(object):
@@ -48,9 +48,9 @@ class BinaryNode(object):
                 self.right = self.right.delete(value)
         else:
             if self.left and self.right:
-                node = self.right.find_min()
-                self.value = node.value
-                self.right = self.right.delete(self.value)
+                child = self.right.find_min()
+                self.value = child.value
+                self.right = self.right.delete(child.value)
             elif self.left:
                 return self.left
             elif self.right:

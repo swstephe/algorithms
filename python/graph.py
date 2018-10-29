@@ -16,4 +16,4 @@ def generate_edges(graph):
             yield node, neighbor
 
 
-print list(generate_edges(GRAPH))
+print(list(generate_edges(GRAPH)))

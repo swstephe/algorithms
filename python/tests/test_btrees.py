@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from nose.tools import *
 import btrees
 import random
 
@@ -10,42 +9,42 @@ REPEAT = 40
 
 def test_binary():
     data = set()
-    tree = trees.BTree()
+    tree = btrees.BTree(3)
     for c in range(1, COUNT + 1):
         for i in range(c):
             value = random.randint(-MAX_INT, MAX_INT)
             tree.insert(value)
-            # print '+', value, tree.in_order()
+            print('+', value, tree.in_order())
             data.add(value)
-            eq_(tree.in_order(), sorted(list(data)))
-        print '-'*20
-        print 'tree', tree
-        print 'in_order', tree.in_order()
-        print 'height', tree.height
-        print 'count', tree.count
-        print 'paths', tree.paths()
-        print 'leaves', tree.leaves()
+            assert tree.in_order() == sorted(list(data))
+        print('-'*20)
+        print('tree', tree)
+        print('in_order', tree.in_order())
+        print('height', tree.height)
+        print('count', tree.count)
+        # print('paths', tree.paths())
+        # print('leaves', tree.leaves())
         for value in list(data):
             tree.delete(value)
             # print '-', value, tree.in_order()
             data.remove(value)
-            eq_(tree.in_order(), sorted(list(data)))
-        eq_(tree.in_order(), [])
+            assert tree.in_order() == sorted(list(data))
+        assert tree.in_order() == []
 
 
 def test_binary1():
     tree = btrees.BTree()
     for key in (50, 30, 20, 40, 70, 60, 80):
-        print '+', key
+        print('+', key)
         tree.put(key, None)
-        print tree
-    # eq_(tree.in_order(), [20, 30, 40, 50, 60, 70, 80])
-    # tree.delete(20)
-    # eq_(tree.in_order(), [30, 40, 50, 60, 70, 80])
-    # tree.delete(30)
-    # eq_(tree.in_order(), [40, 50, 60, 70, 80])
-    # tree.delete(50)
-    # eq_(tree.in_order(), [40, 60, 70, 80])
+        print(tree)
+    assert tree.in_order() == [20, 30, 40, 50, 60, 70, 80]
+    tree.delete(20)
+    assert tree.in_order() == [30, 40, 50, 60, 70, 80]
+    tree.delete(30)
+    assert tree.in_order() == [40, 50, 60, 70, 80]
+    tree.delete(50)
+    assert tree.in_order() == [40, 60, 70, 80]
 
 
 BTREE3_DATA = (
@@ -75,7 +74,7 @@ def test_btree3():
     for key, value in BTREE3_DATA:
         st.put(key, value)
         check[key] = value
-        print '-'*20
-        print st
+        print('-'*20)
+        print(st)
     for key, value in check.iteritems():
-        eq_(st.get(key), value)
+        assert st.get(key) == value
