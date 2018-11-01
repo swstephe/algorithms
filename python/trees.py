@@ -1,20 +1,28 @@
 # -*- coding: utf-8 -*-
-from itertools import zip_longest
 
 
-class BinaryNode(object):
+class Node(object):
     def __init__(self, value):
         self.value = value
         self.left = None
         self.right = None
 
-    @property
-    def count(self):
-        return (
-            (self.left.count if self.left else 0)
-            + (self.right.count if self.right else 0)
-            + 1
-        )
+    def __iter__(self):
+        if self.left:
+            yield from self.left
+        yield self.value
+        if self.right:
+            yield from self.right
+
+    def __len__(self):
+        return sum(1 for _ in self)
+
+    def __reversed__(self):
+        if self.right:
+            yield from reversed(self.right)
+        yield self.value
+        if self.left:
+            yield from reversed(self.left)
 
     @property
     def height(self):
@@ -24,20 +32,20 @@ class BinaryNode(object):
         ) + 1
 
     def find_min(self):
-        if self.left:
-            return self.left.find_min()
-        return self
+        return self.left.find_min() if self.left else self
 
     def find_max(self):
-        if self.right:
-            return self.right.find_max()
-        return self
+        return self.right.find_max() if self.right else self
 
     def find(self, value):
-        if value == self.value:
+        if value < self.value:
+            if self.left:
+                return self.left.find(value)
+        elif value > self.value:
+            if self.right:
+                return self.right.find(value)
+        else:
             return self
-        child = self.left if value < self.value else self.right
-        return None if child is None else child.find(value)
 
     def delete(self, value):
         if value < self.value:
@@ -64,44 +72,35 @@ class BinaryNode(object):
             if self.left:
                 self.left.insert(value)
             else:
-                self.left = BinaryNode(value)
+                self.left = Node(value)
         elif value > self.value:
             if self.right:
                 self.right.insert(value)
             else:
-                self.right = BinaryNode(value)
-        return self
-
-    def in_order(self):
-        if self.left:
-            for left in self.left.in_order():
-                yield left
-        yield self.value
-        if self.right:
-            for right in self.right.in_order():
-                yield right
+                self.right = Node(value)
 
     def leaves(self):
         if self.left or self.right:
             if self.left:
-                for leaf in self.left.leaves():
-                    yield leaf
+                yield from self.left.leaves()
             if self.right:
-                for leaf in self.right.leaves():
-                    yield leaf
+                yield from self.right.leaves()
         else:
             yield self.value
 
     def paths(self):
+        def mkpath(path):
+            yield self.value
+            yield from path
         if self.left or self.right:
             if self.left:
                 for path in self.left.paths():
-                    yield (self.value,) + path
+                    yield tuple(mkpath(path))
             if self.right:
                 for path in self.right.paths():
-                    yield (self.value,) + path
+                    yield tuple(mkpath(path))
         else:
-            yield (self.value,)
+            yield tuple((self.value,))
 
     def __str__(self):
         if self.left or self.right:
@@ -113,21 +112,24 @@ class BinaryNode(object):
         return str(self.value)
 
 
-class BinaryTree(object):
+class Tree(object):
     def __init__(self):
         self.root = None
 
-    @property
-    def count(self):
+    def __iter__(self):
         if self.root:
-            return self.root.count
-        return 0
+            yield from self.root
+
+    def __len__(self):
+        return len(self.root) if self.root else 0
+
+    def __reversed__(self):
+        if self.root:
+            yield from reversed(self.root)
 
     @property
     def height(self):
-        if self.root:
-            return self.root.height
-        return 0
+        return self.root.height if self.root else 0
 
     def find_min(self):
         if self.root:
@@ -152,13 +154,8 @@ class BinaryTree(object):
         if self.root:
             self.root.insert(value)
         else:
-            self.root = BinaryNode(value)
+            self.root = Node(value)
         return self.root
-
-    def in_order(self):
-        if self.root:
-            return list(self.root.in_order())
-        return []
 
     def leaves(self):
         if self.root:

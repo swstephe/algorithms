@@ -2,6 +2,13 @@
 import math
 import primes
 
+def reduce(func, seq, init):
+    value = init
+    for item in seq:
+        value = func(value, item)
+    return value
+
+
 FNV_BASIS = 'chongo <Landon Curt Noll> /\../\\'
 UINT_MAX = (1 << 32) - 1
 ADLER_MOD = 0xfff1
@@ -43,16 +50,16 @@ def fnv_prime(s):
     assert 4 < s < 11
     bits = [i for i in range(0xf, 0xf2) if sum((i >> p) & 1 for p in range(8)) in (4, 5)]
     t = (5 + (1 << s)) / 12
-    print 't', 8*t
+    print('t', 8*t)
     value = (1 << (8*t)) + 0x100000000
-    print 'value', value
+    print('value', value)
     for b in bits:
         p = value + b
         if not primes.is_prime1(p):
             continue
         if p % ((1 << 40) - (1 << 24) - 1) <= 0x1000180:
             continue
-        print 'prime', value, hex(b), value + b
+        print('prime', value, hex(b), value + b)
         return value + b
     # prime = (1 << t) + (1 << 8) + b
 

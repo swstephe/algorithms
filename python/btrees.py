@@ -5,43 +5,49 @@ M = 4
 class Node(object):
     def __init__(self, degree):
         self.degree = degree
-        self.keys = []
+        self.pairs = []
         self.children = []
 
-    @property
-    def count(self):
-        return len(self.keys) + sum(child.count for child in self.children)
+    def __iter__(self):
+        for i, pair in enumerate(self.pairs):
+            if self.children:
+                yield from self.children[i]
+            yield pair
+        if self.children:
+            yield from self.children[-1]
+
+    def __len__(self):
+        return len(self.pairs) + sum(len(child) for child in self.children)
+
+    def __reversed__(self):
+        if self.children:
+            yield from reversed(self.children[-1])
+        for i, pair in reversed(enumerate(self.pairs)):
+            yield pair
+            if self.children:
+                yield from self.children[i]
 
     @property
     def height(self):
-        return (0 if self.leaf else self.children[0].height) + 1
+        return (0 if self.is_leaf else self.children[0].height) + 1
 
     @property
-    def leaf(self):
+    def is_leaf(self):
         return len(self.children) == 0
 
-    def in_order(self):
-        for i, key in enumerate(self.keys):
-            if self.children:
-                for k in self.children[i].in_order():
-                    yield k
-            yield key
-        if self.children:
-            for k in self.children[-1].in_order():
-                yield k
-
-    def insert(self, key):
-        if self.leaf:
-            if len(self.keys) < self.degree:
-                self.keys.append(key)
-
+    def insert(self, key, value):
+        if self.is_leaf:
+            if len(self.pairs) > self.degree:
+                self.split()
+            self.pairs.append((key, value))
 
     def search(self, key):
-        for i, k in enumerate(self.keys):
-            if k == key:
+        for i, pair in enumerate(self.pairs):
+            if pair[0] == key:
                 return self
-            if k > key:
+            if pair[0] > key:
                 return self.children[i].search(key)
+        return self.children[-1].search(key)
 
 
 
@@ -50,42 +56,29 @@ class BTree(object):
         self.degree = degree
         self.root = None
 
-    @property
-    def count(self):
-        return self.root.count if self.root else 0
+    def __iter__(self):
+        if self.root:
+            yield from self.root
+
+    def __len__(self):
+        return len(self.root) if self.root else 0
+
+    def __reversed__(self):
+        if self.root:
+            yield from reversed(self.root)
 
     @property
     def height(self):
         return self.root.height if self.root else 0
 
-    @property
-    def is_empty(self):
-        return self.root == None or self.root.count == 0
-
-    def in_order(self):
-        return list(self.root.in_order()) if self.root else []
-
-    def get(self, key):
-        if self.root:
-            return self.root.search(key)
-
-    def put(self, key, value):
-        u = self.insert(self.root, key, value, self.height)
-        self.n += 1
-        if u is None:
-            return
-
-        # need to split root
-        t = Node(2)
-        t.children[0] = Entry(self.root.children[0].key, None, self.root)
-        t.children[1] = Entry(u.children[0].key, None, u)
-        self.root = t
-        self.height += 1
-
-    def insert(self, key):
+    def insert(self, key, value):
         if self.root is None:
             self.root = Node(self.degree)
-        self.root.insert(key)
+        self.root.insert(key, value)
+
+    def search(self, key):
+        if self.root:
+            return self.root.search(key)
 
     def split(self, h):
         t = Node(M/2)
@@ -95,4 +88,6 @@ class BTree(object):
         return t
 
     def __str__(self):
-        return str(self.root)
+        if self.root:
+            return str(self.root)
+        return '<empty>'

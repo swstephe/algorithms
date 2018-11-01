@@ -1,92 +1,69 @@
 # -*- coding: utf8 -*-
-
-KEYS = dict((ch, str(i + 2)) for i, k in enumerate((
-    'abc',      # 2
-    'def',      # 3
-    'ghi',      # 4
-    'jkl',      # 5
-    'mno',      # 6
-    'pqrs',     # 7
-    'tuv',      # 8
-    'wxyz',     # 9
-)) for ch in k)
-
-print('KEYS', KEYS)
+from collections import defaultdict
 
 
-class TrieNode(object):
+class Node(object):
     def __init__(self):
-        self.children = {}
-        self.words = set()
+        self.children = defaultdict(Node)
+        self.value = None
 
-    def add(self, word):
-        keys_word = ''.join(ch for ch in word if ch in KEYS)
-        if not keys_word:
-            return
-        self.add_child(word, keys_word)
+    def __iter__(self):
+        for char, node in sorted(self.children.items()):
+            if node.value is not None:
+                yield char, node.value
+            for suffix, value in node:
+                yield char + suffix, value
 
-    def add_child(self, word, suffix):
-        ch = KEYS[suffix[0]]
-        if ch not in self.children:
-            self.children[ch] = TrieNode()
-        if suffix[1:]:
-            self.children[ch].add_child(word, suffix[1:])
-        if len(self.words) < 5:
-            self.words.add(word)
+    def __len__(self):
+        return sum(1 for _ in self)
 
-    def dump(self):
-        for ch, child in sorted(self.children.items()):
-            yield ch, self.words
-            for suffix, words in child.dump():
-                yield ch + suffix, words
+    def __str__(self):
+        gen = (
+            '{}: {}'.format(char, node)
+            for char, node in sorted(self.children.items())
+        )
+        return '{{{}}}/{}'.format(', '.join(gen), self.value)
 
-    def find(self, keys):
-        if keys and keys[0] in self.children:
-            return self.children[keys[0]].find(keys[1:])
-        return self.words
+    def find(self, key):
+        if not key:
+            return self.value
+        child = self.children.get(key[0])
+        if child is not None:
+            return child.find(key[1:])
 
+    def find_prefix(self, key):
+        if not key:
+            result = set()
+            for k, v in self:
+                result |= v
+            return result
+        child = self.children.get(key[0])
+        if child is not None:
+            return child.find_prefix(key[1:])
 
-trie = TrieNode()
-
-
-with open('wordlist.txt') as f:
-    for i, word in enumerate(f):
-        # if i >= 100:
-        #     break
-        word = word.strip()
-        print(word)
-        trie.add(word)
-
-
-# for thing in sorted(trie.dump()):
-#     print('-', thing)
-
-print(trie.find('22738275'))
-print(trie.find('9244'))
+    def insert(self, key, value):
+        if key:
+            self.children[key[0]].insert(key[1:], value)
+        else:
+            self.value = value
 
 
-# trie = Node()
-# LINES = (
-#     'add s',
-#     'add ss',
-#     'add sss',
-#     'add ssss',
-#     'add sssss',
-#     'find s',
-#     'find ss',
-#     'find sss',
-#     'find ssss',
-#     'find sssss',
-#     'find ssssss',
-# )
-# n = len(LINES)
-# for i in range(n):
-#     line = LINES[i].strip().split(None, 1)
-#     if line[0] == 'add':
-#         node = trie
-#         for ch in line[1]:
-#             node = node.add(ch)
-#         node.end = True
-#     elif line[0] == 'find':
-#         print('-'*20)
-#         print(trie.find(line[1]))
+class Trie(object):
+    def __init__(self):
+        self.root = Node()
+
+    def __iter__(self):
+        yield from self.root
+
+    def __str__(self):
+        return str(self.root)
+
+    def find(self, key):
+        return self.root.find(key)
+
+    def find_prefix(self, key):
+        return self.root.find_prefix(key)
+
+    def insert(self, key, value):
+        self.root.insert(key, value)
+
