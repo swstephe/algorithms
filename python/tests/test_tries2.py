@@ -1,12 +1,13 @@
 # -*- coding: utf8 -*-
 import os
-from tries import Trie
+import string
+from tries2 import Trie
 
 CWD = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_simple():
-    trie = Trie()
+    trie = Trie(string.ascii_lowercase)
     assert list(trie) == []
     assert len(trie) == 0
     assert str(trie) == '{}/None'
@@ -17,7 +18,7 @@ def test_simple():
 
 
 def test_lines():
-    trie = Trie()
+    trie = Trie('s')
     trie.insert('s', True)
     trie.insert('ss', True)
     trie.insert('sss', True)
@@ -48,12 +49,12 @@ def test_words():
         '9': 'wxyz',
     }
     keys = dict((ch, k) for k, v in keys.items() for ch in v)
-    trie = Trie()
+    trie = Trie(string.digits)
 
     # load with 1000 most common words
     with open(os.path.join(CWD, 'wordlist.txt')) as f:
-        for i, word in enumerate(f):
-            word = word.strip().lower()
+        for i, line in enumerate(f):
+            word = line.strip().lower()
             digits = ''.join(keys[ch] for ch in word if ch in keys)
             if not digits:
                 continue

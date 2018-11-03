@@ -3,49 +3,61 @@ N = 3
 
 
 class Heap(object):
-    direction = None
-
-    def __init__(self, *args):
+    def __init__(self, *args, n=N):
+        self.n = n
         self.data = [value for value in args]
+
+    def cmp(self, i, j):
+        raise NotImplementedError("cmp")
+
+    def first(self, parent):
+        raise NotImplementedError("first")
+
+    def last(self, parent):
+        raise NotImplementedError("last")
+
+    def children(self, parent):
+        n = len(self.data)
+        first = self.child(parent, 0)
+        if first >= n:
+            return range(0)
+        last = self.child(parent, self.n - 1)
+        if last >= n:
+            last = n - 1
+        return range(first, last + 1)
 
     @property
     def height(self):
         n = len(self.data)
         h = 0
-        total = 0
-        while n > total:
-            total += N**h
+        while n > 0:
+            n -= self.n**h
             h += 1
         return h
 
-    @staticmethod
-    def child(parent, i):
-        return N*parent + i + 1
+    @property
+    def is_empty(self):
+        return len(self.data) == 0
 
-    @staticmethod
-    def parent(child):
-        return (child - 1) // N
+    def child(self, parent, i):
+        return self.n*parent + i + 1
 
-    def extreme(self, parent):
-        children = self.data[self.child(parent, 0):self.child(parent, N)]
-        if not children:
-            return None
-        return children.index(reduce(lambda a, x: a if cmp(a, x) == self.direction else x, children))
+    def parent(self, child):
+        if child > 0:
+            return (child - 1) // self.n
 
-    @staticmethod
-    def walk_up(child):
-        parent = Heap.parent(child)
-        while parent >= 0:
+    def walk_up(self, child):
+        parent = self.parent(child)
+        while parent is not None:
             yield parent, child
-            parent, child = Heap.parent(parent), parent
+            parent, child = self.parent(parent), parent
 
     def walk_down(self, parent=0):
         n = len(self.data)
-        while parent < n:
-            child = self.extreme(parent)
-            if child is None:
+        while True:
+            child = self.first(parent)
+            if child >= n:
                 break
-            child = Heap.child(parent, child)
             yield parent, child
             parent = child
 
@@ -53,17 +65,8 @@ class Heap(object):
         self.data[i], self.data[j] = self.data[j], self.data[i]
 
     def is_valid(self, parent=0):
-        n = len(self.data)
-        if parent >= n:
-            return True
-        child = Heap.child(parent, 0)
-        for child in range(child, min(n, child + N)):
-            if cmp(self.data[parent], self.data[child]) not in (0, self.direction):
-                print 'cmp({}={}, {}={}) != {}'.format(
-                    parent, self.data[parent],
-                    child, self.data[child],
-                    self.direction
-                )
+        for child in self.children(parent):
+            if self.cmp(parent, child) == 1:
                 return False
             if not self.is_valid(child):
                 return False
@@ -72,9 +75,17 @@ class Heap(object):
     def push(self, value):
         self.data.append(value)
         for parent, child in self.walk_up(len(self.data) - 1):
-            if cmp(self.data[parent], self.data[child]) in (0, self.direction):
-                break
-            self.swap(parent, child)
+            if self.cmp(parent, child) == 1:
+                self.swap(parent, child)
+
+    def heapify(self, parent=0):
+        extreme = parent
+        for i, child in enumerate(self.children(parent)):
+            if self.cmp(extreme, child) == 1:
+                extreme = child
+        if extreme != parent:
+            self.swap(extreme, parent)
+            self.heapify(extreme)
 
     def pop(self):
         n = len(self.data)
@@ -84,10 +95,7 @@ class Heap(object):
             return self.data.pop()
         self.swap(0, n - 1)
         value = self.data.pop()
-        for parent, child in self.walk_down():
-            if cmp(self.data[parent], self.data[child]) in (0, self.direction):
-                break
-            self.swap(parent, child)
+        self.heapify()
         return value
 
     def __str__(self):
@@ -97,17 +105,39 @@ class Heap(object):
         s = []
         o = 0
         for i in range(h):
-            w = N**i
+            w = self.n**i
             s.append(' '.join(str(d) for d in self.data[o:o + w]))
             o += w
         return '\n'.join(s)
 
 
 class MinHeap(Heap):
-    direction = -1
+    def cmp(self, i, j):
+        if self.data[i] < self.data[j]:
+            return -1
+        elif self.data[i] > self.data[j]:
+            return 1
+        else:
+            return 0
+
+    def first(self, parent):
+        return self.child(parent, 0)
+
+    def last(self, parent):
+        return self.child(parent, self.n - 1)
 
 
 class MaxHeap(Heap):
-    direction = 1
+    def cmp(self, i, j):
+        if self.data[i] > self.data[j]:
+            return -1
+        elif self.data[i] < self.data[j]:
+            return 1
+        else:
+            return 0
 
+    def first(self, parent):
+        return self.child(parent, self.n - 1)
 
+    def last(self, parent):
+        return self.child(parent, 0)

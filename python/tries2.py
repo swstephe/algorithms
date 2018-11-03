@@ -1,14 +1,16 @@
 # -*- coding: utf8 -*-
-from collections import defaultdict
 
 
 class Node(object):
-    def __init__(self):
-        self.children = defaultdict(Node)
+    def __init__(self, alphabet):
+        self.alphabet = alphabet
+        self.children = [None] * len(self.alphabet)
         self.value = None
 
     def __iter__(self):
-        for char, child in sorted(self.children.items()):
+        for char, child in zip(self.alphabet, self.children):
+            if child is None:
+                continue
             if child.value is not None:
                 yield char, child.value
             for suffix, value in child:
@@ -20,26 +22,34 @@ class Node(object):
     def __str__(self):
         return '{{{}}}/{}'.format(', '.join(
             '{}: {}'.format(char, node)
-            for char, node in sorted(self.children.items())
+            for char, node in zip(self.alphabet, self.children)
+            if node is not None
         ), self.value)
 
     def find_node(self, key):
         if key == '':
             return self
-        child = self.children.get(key[0])
-        if child is not None:
-            return child.find_node(key[1:])
+        try:
+            i = self.alphabet.index(key[0])
+        except ValueError:
+            return
+        if self.children[i] is not None:
+            return self.children[i].find_node(key[1:])
 
     def insert(self, key, value):
         if key == '':
             self.value = value
         else:
-            self.children[key[0]].insert(key[1:], value)
+            i = self.alphabet.index(key[0])
+            if self.children[i] is None:
+                self.children[i] = Node(self.alphabet)
+            self.children[i].insert(key[1:], value)
 
 
 class Trie(object):
-    def __init__(self):
-        self.root = Node()
+    def __init__(self, alphabet):
+        self.alphabet = alphabet
+        self.root = Node(self.alphabet)
 
     def __contains__(self, item):
         return self.root.find_node(item) is not None

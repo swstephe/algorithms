@@ -2,7 +2,7 @@
 from collections import defaultdict, deque
 import math
 
-from heap import MinHeap
+from heap2 import MinHeap
 
 
 class Graph(defaultdict):
@@ -67,7 +67,22 @@ class Graph(defaultdict):
                 else:
                     queue.append((_next, path + [_next]))
 
-    def dijkstra(self, start, goal):
+    def greedy_best_first(self, start, goal, heuristic=lambda a, b: 1):
+        key_func = lambda x: heuristic(x, goal)
+        visited = {}
+        queue = deque([(start, [start])])
+        while queue:
+            vertex, path = queue.popleft()
+            if vertex in visited:
+                continue
+            visited[vertex] = path
+            if vertex == goal:
+                break
+            for neighbor in sorted(self[vertex], key=key_func):
+                queue.append((neighbor, path + [neighbor]))
+        return visited[goal]
+
+    def dijkstra(self, start, goal, heuristic=lambda a, b: 1):
         visited = {}
         heap = MinHeap((0, start, [start]))
         while heap:
@@ -78,50 +93,43 @@ class Graph(defaultdict):
             if vertex == goal:
                 break
             for neighbor in self[vertex]:
-                heap.push((distance + 1, neighbor, path + [neighbor]))
+                heap.push((
+                    distance + heuristic(vertex, neighbor),
+                    neighbor,
+                    path + [neighbor]
+                ))
         return visited[goal]
 
-    def a_star(self, start, goal):
-        def heuristic(node1, node2):
-            return 1
-        visited = set()
-        g_score = dict((v, 0 if v == start else None) for v in self)
-        f_score = dict((v, heuristic(start, goal) if v == start else None) for v in self)
-        heap = MinHeap((f_score[start], start, [start]))
+    def a_star(self, start, goal, heuristic=lambda a, b: 1):
+        visited = {}
+        heap = MinHeap((0, start, [start]))
         while heap:
             score, vertex, path = heap.pop()
+            if vertex in visited:
+                continue
+            visited[vertex] = score, path
             if vertex == goal:
-                return path
-            visited.add(vertex)
+                break
             for neighbor in self[vertex]:
-                if neighbor in visited:
-                    continue
-                heap.push((score + heuristic(neighbor, goal), neighbor, path + [neighbor]))
+                heap.push((
+                    score + heuristic(neighbor, goal),
+                    neighbor,
+                    path + [neighbor]
+                ))
+        return visited[goal]
 
     def warshall(self, start, goal):
-        dist = defaultdict(dict)
-        for u in self:
-            for v in self:
-                dist[u][v] = [0 if u == v else math.inf, (u, v)]
-        for a, b in self.edges:
-            dist[a][b][0] = 1
-        for k in self:
-            for i in self:
-                for j in self:
-                    d = dist[i][k][0] + dist[k][j][0]
-                    if dist[i][j][0] > d:
-                        dist[i][j] = [d, dist[i][k][1][:-1] + dist[k][j][1]]
+        dist = {}
+        for v1 in self:
+            dist[v1] = {}
+            for v2 in self:
+                dist[v1][v2] = [0 if v1 == v2 else math.inf, (v1, v2)]
+        for v1, v2 in self.edges:
+            dist[v1][v2][0] = 1
+        for v1 in self:
+            for v2 in self:
+                for v3 in self:
+                    d = dist[v2][v1][0] + dist[v1][v3][0]
+                    if dist[v2][v3][0] > d:
+                        dist[v2][v3] = [d, dist[v2][v1][1][:-1] + dist[v1][v3][1]]
         return dist[start][goal]
-
-
-# GRAPH = Graph(a=['c'], b=['c', 'e'], c=['a', 'b', 'd', 'e'], d=['c'], e=['c', 'b'], f=[])
-GRAPH = Graph(a=['b', 'c'], b=['a', 'd', 'e'], c=['a', 'f'], d=['b'], e=['b', 'f'], f=['c', 'e'])
-
-print(GRAPH)
-print('depth_first', GRAPH.depth_first('a'))
-print('depth_first_paths', list(GRAPH.depth_first_paths('a', 'e')))
-print('breadth_first', GRAPH.breadth_first('a'))
-print('breadth_first_paths', list(GRAPH.breadth_first_paths('a', 'e')))
-print('dijkstra', GRAPH.dijkstra('a', 'e'))
-# print('a_star', GRAPH.a_star('a', 'e'))
-print('warshall', GRAPH.warshall('a', 'e'))
