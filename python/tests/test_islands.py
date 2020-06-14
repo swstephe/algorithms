@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 from islands import Graph
 
+
 def test0():
     g = Graph((
         (0, 0, 0, 0, 0),

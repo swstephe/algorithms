@@ -1,4 +1,3 @@
 module Algorithms
-    include("trees.jl")
-    include("primes.jl")
+    include("slinked.jl")
 end

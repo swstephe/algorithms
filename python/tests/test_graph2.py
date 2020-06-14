@@ -58,7 +58,10 @@ def test_two():
         len(list(col for col in range(cols) if g[row][col] != 0))
         for row in range(rows)
     )
-    heuristic = lambda a, b: g[a][b]
+
+    def heuristic(a, b):
+        return g[a][b]
+
     assert graph.dijkstra(0, 0, heuristic)[0] == 0
     assert graph.dijkstra(0, 1, heuristic)[0] == 4
     assert graph.dijkstra(0, 2, heuristic)[0] == 12

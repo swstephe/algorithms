@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
-import math
+from functools import reduce
 import primes
-
-def reduce(func, seq, init):
-    value = init
-    for item in seq:
-        value = func(value, item)
-    return value
-
 
 FNV_BASIS = 'chongo <Landon Curt Noll> /\../\\'
 UINT_MAX = (1 << 32) - 1

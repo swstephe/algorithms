@@ -2,6 +2,7 @@
 """
 from https://fiftyexamples.readthedocs.io/en/latest
 """
+from functools import reduce
 
 
 def celsius(f):

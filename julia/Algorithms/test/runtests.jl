@@ -4,8 +4,7 @@ using Test
 
 
 tests = [
-    # "primes",
-    "trees",
+    "slinked"
 ]
 
 if length(ARGS) > 0
